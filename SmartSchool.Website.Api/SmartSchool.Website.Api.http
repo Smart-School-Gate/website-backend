@@ -1,0 +1,35 @@
+@SmartSchool.Website.Api_HostAddress = http://localhost:5000
+
+### 1. Submit Valid Contact Form
+POST {{SmartSchool.Website.Api_HostAddress}}/api/v1/contact-submissions
+Content-Type: application/json
+
+{
+  "name": "Ahmed Mohamed",
+  "schoolName": "Example International School",
+  "phoneNumber": "+966500000000",
+  "workEmail": "contact@example.com",
+  "message": "We would like to learn more about the platform."
+}
+
+### 2. Submit With Optional Message Omitted
+POST {{SmartSchool.Website.Api_HostAddress}}/api/v1/contact-submissions
+Content-Type: application/json
+
+{
+  "name": "Sara Al-Otaibi",
+  "schoolName": "Riyadh Excellence Academy",
+  "phoneNumber": "+966512345678",
+  "workEmail": "sara@excellence.edu.sa"
+}
+
+### 3. Invalid Submission (Missing Required Fields & Invalid Email)
+POST {{SmartSchool.Website.Api_HostAddress}}/api/v1/contact-submissions
+Content-Type: application/json
+
+{
+  "name": "",
+  "schoolName": "",
+  "phoneNumber": "abc",
+  "workEmail": "not-an-email"
+}

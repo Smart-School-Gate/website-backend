@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SmartSchool.Website.Api</name>
+    </assembly>
+    <members>
+        <member name="M:SmartSchool.Website.Api.Common.DatabaseConfigurationHelper.ResolveConnectionString(System.String)">
+            <summary>
+            Parses either a standard ADO.NET connection string or a postgresql:// URI into a valid Npgsql connection string.
+            </summary>
+        </member>
+        <member name="M:SmartSchool.Website.Api.Controllers.ContactSubmissionsController.Submit(SmartSchool.Website.Api.DTOs.CreateContactSubmissionRequest,System.Threading.CancellationToken)">
+            <summary>
+            Submits a prospective school contact or demonstration request.
+            </summary>
+            <param name="request">The contact form submission payload.</param>
+            <param name="cancellationToken">Cancellation token.</param>
+            <returns>Confirmation details including the assigned submission ID.</returns>
+        </member>
+        <member name="T:SmartSchool.Website.Api.Data.Entities.ContactSubmission">
+            <summary>
+            Represents a prospective school contact/demonstration form submission.
+            </summary>
+        </member>
+        <member name="T:SmartSchool.Website.Api.Data.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:SmartSchool.Website.Api.Data.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmartSchool.Website.Api.Data.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:SmartSchool.Website.Api.Data.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:SmartSchool.Website.Api.DTOs.ContactSubmissionResponse">
+            <summary>
+            Confirmation response returned after a successful contact form submission.
+            </summary>
+        </member>
+        <member name="T:SmartSchool.Website.Api.DTOs.CreateContactSubmissionRequest">
+            <summary>
+            Payload submitted from the website contact/demo form.
+            </summary>
+        </member>
+        <member name="P:SmartSchool.Website.Api.DTOs.CreateContactSubmissionRequest.FullName">
+            <summary>
+            Alias for Name to support frontend payloads using fullName.
+            </summary>
+        </member>
+    </members>
+</doc>

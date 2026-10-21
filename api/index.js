@@ -67,9 +67,6 @@ function setCorsHeaders(req, res) {
 }
 
 function sendJson(res, statusCode, data) {
-  if (typeof res.status === 'function' && typeof res.json === 'function') {
-    return res.status(statusCode).json(data);
-  }
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.end(JSON.stringify(data));

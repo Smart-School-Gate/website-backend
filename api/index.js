@@ -66,6 +66,43 @@ function setCorsHeaders(req, res) {
   res.setHeader('Access-Control-Max-Age', '86400');
 }
 
+function sendJson(res, statusCode, data) {
+  if (typeof res.status === 'function' && typeof res.json === 'function') {
+    return res.status(statusCode).json(data);
+  }
+  res.statusCode = statusCode;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.end(JSON.stringify(data));
+}
+
+async function parseBody(req) {
+  if (req.body && typeof req.body === 'object') {
+    return req.body;
+  }
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return null;
+    }
+  }
+  return new Promise((resolve) => {
+    let data = '';
+    req.on('data', chunk => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      if (!data) return resolve({});
+      try {
+        resolve(JSON.parse(data));
+      } catch {
+        resolve(null);
+      }
+    });
+    req.on('error', () => resolve(null));
+  });
+}
+
 // Validation regular expressions
 const PHONE_REGEX = /^[\d\s\+\-\(\)\.]{7,30}$/;
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -75,12 +112,13 @@ module.exports = async function handler(req, res) {
 
   // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
-    return res.status(204).end();
+    res.statusCode = 204;
+    return res.end();
   }
 
   // Health check endpoint
   if (req.method === 'GET') {
-    return res.status(200).json({
+    return sendJson(res, 200, {
       status: 'healthy',
       service: 'Smart School Website Contact API',
       timestamp: new Date().toISOString(),
@@ -89,7 +127,7 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({
+    return sendJson(res, 405, {
       status: 405,
       title: 'Method Not Allowed',
       detail: `HTTP method ${req.method} is not supported on this endpoint.`,
@@ -98,32 +136,21 @@ module.exports = async function handler(req, res) {
 
   // Extract client IP for rate limiting
   const forwardedFor = req.headers['x-forwarded-for'];
-  const clientIp = (forwardedFor ? forwardedFor.split(',')[0].trim() : req.socket.remoteAddress) || 'unknown';
+  const clientIp = (forwardedFor ? forwardedFor.split(',')[0].trim() : req.socket?.remoteAddress) || 'unknown';
 
   if (isRateLimited(clientIp)) {
-    return res.status(429).json({
+    return sendJson(res, 429, {
       status: 429,
       title: 'Too Many Requests',
       detail: 'Rate limit exceeded. Please wait before submitting another request.',
     });
   }
 
-  // Parse payload
-  let body = req.body;
-  if (typeof body === 'string') {
-    try {
-      body = JSON.parse(body);
-    } catch {
-      return res.status(400).json({
-        status: 400,
-        title: 'Invalid payload',
-        detail: 'A valid JSON request body is required.',
-      });
-    }
-  }
+  // Parse payload safely
+  const body = await parseBody(req);
 
   if (!body || typeof body !== 'object') {
-    return res.status(400).json({
+    return sendJson(res, 400, {
       status: 400,
       title: 'Invalid payload',
       detail: 'A valid JSON request body is required.',
@@ -173,7 +200,7 @@ module.exports = async function handler(req, res) {
   }
 
   if (Object.keys(errors).length > 0) {
-    return res.status(400).json({
+    return sendJson(res, 400, {
       type: 'https://tools.ietf.org/html/rfc9110#section-15.5.1',
       title: 'One or more validation errors occurred.',
       status: 400,
@@ -206,14 +233,14 @@ module.exports = async function handler(req, res) {
     // Structured logging (do not log personal messages or sensitive info)
     console.log(`[ContactSubmissions] Created submission ${submissionId} for school: ${schoolName}`);
 
-    return res.status(201).json({
+    return sendJson(res, 201, {
       id: submissionId,
       message: 'Your request has been submitted successfully.',
     });
   } catch (err) {
     console.error('[ContactSubmissions] Database error occurred:', err.message);
 
-    return res.status(500).json({
+    return sendJson(res, 500, {
       status: 500,
       title: 'Internal Server Error',
       detail: 'An unexpected error occurred while processing your request. Please try again later.',
